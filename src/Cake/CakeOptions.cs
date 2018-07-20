@@ -101,6 +101,11 @@ namespace Cake
         public bool Exclusive { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating the first task that should be run ignore prior dependencies.
+        /// </summary>
+        public string ContinueFromTaskName { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CakeOptions"/> class.
         /// </summary>
         public CakeOptions()

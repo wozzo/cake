@@ -180,6 +180,7 @@ namespace Cake.Core
         /// <param name="context">The context.</param>
         /// <param name="strategy">The execution strategy.</param>
         /// <param name="settings">The execution settings.</param>
+        /// <exception cref="Exception"></exception>
         /// <returns>The resulting report.</returns>
         public async Task<CakeReport> RunTargetAsync(ICakeContext context, IExecutionStrategy strategy, ExecutionSettings settings)
         {
@@ -238,14 +239,16 @@ namespace Cake.Core
                     // Execute only the target task.
                     var task = _tasks.FirstOrDefault(x => x.Name.Equals(settings.Target, StringComparison.OrdinalIgnoreCase));
                     await RunTask(context, strategy, task, target, stopWatch, report);
+                    return report;
                 }
-                else
+
+                // Ignore tasks until the continue from target
+                orderedTasks = RemoveTasksToSkip(settings.ContinueFromTaskName, orderedTasks);
+
+                // Execute all scheduled tasks.
+                foreach (var task in orderedTasks)
                 {
-                    // Execute all scheduled tasks.
-                    foreach (var task in orderedTasks)
-                    {
-                        await RunTask(context, strategy, task, target, stopWatch, report);
-                    }
+                    await RunTask(context, strategy, task, target, stopWatch, report);
                 }
 
                 return report;
@@ -260,6 +263,24 @@ namespace Cake.Core
             {
                 PerformTeardown(strategy, context, stopWatch, report, exceptionWasThrown, thrownException);
             }
+        }
+
+        private static CakeTask[] RemoveTasksToSkip(string continueFromTaskName, CakeTask[] orderedTasks)
+        {
+            if (string.IsNullOrWhiteSpace(continueFromTaskName))
+            {
+                return orderedTasks;
+            }
+
+            var startTargetNodeIndex = Array.FindIndex(orderedTasks,
+                    x => string.Equals(x.Name, continueFromTaskName, StringComparison.OrdinalIgnoreCase));
+            if (startTargetNodeIndex == -1)
+            {
+                throw new Exception($"No continue from target found with the name {continueFromTaskName}");
+            }
+
+            orderedTasks = orderedTasks.Skip(startTargetNodeIndex).ToArray();
+            return orderedTasks;
         }
 
         private async Task RunTask(ICakeContext context, IExecutionStrategy strategy, CakeTask task, string target, Stopwatch stopWatch, CakeReport report)

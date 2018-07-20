@@ -203,6 +203,29 @@ namespace Cake.Core.Tests.Unit
             }
 
             [Fact]
+            public async Task Should_Skip_Until_ContinueFromTarget_Task()
+            {
+                // Given
+                var result = new List<string>();
+                var fixture = new CakeEngineFixture();
+                var settings = new ExecutionSettings().SetTarget("E").SetContinueFromTask("D");
+                var engine = fixture.CreateEngine();
+                engine.RegisterTask("A").Does(() => result.Add("A"));
+                engine.RegisterTask("B").IsDependentOn("A").Does(() => result.Add("B"));
+                engine.RegisterTask("C").IsDependentOn("B").Does(() => result.Add("C"));
+                engine.RegisterTask("D").IsDependentOn("C").IsDependeeOf("E").Does(() => { result.Add("D"); });
+                engine.RegisterTask("E").Does(() => { result.Add("E"); });
+
+                // When
+                await engine.RunTargetAsync(fixture.Context, fixture.ExecutionStrategy, settings);
+
+                // Then
+                Assert.Equal(2, result.Count);
+                Assert.Equal("D", result[0]);
+                Assert.Equal("E", result[1]);
+            }
+
+            [Fact]
             public async Task Should_Skip_Tasks_Where_Boolean_Criterias_Are_Not_Fulfilled()
             {
                 // Given

@@ -20,6 +20,11 @@ namespace Cake.Core
         public bool Exclusive { get; private set; }
 
         /// <summary>
+        /// Gets the first target to be run
+        /// </summary>
+        public string ContinueFromTaskName { get; private set; }
+
+        /// <summary>
         /// Sets the target to be executed.
         /// </summary>
         /// <param name="target">The target.</param>
@@ -37,6 +42,17 @@ namespace Cake.Core
         public ExecutionSettings UseExclusiveTarget()
         {
             Exclusive = true;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the first task to be run. First node in graph should be run if null or empty.
+        /// </summary>
+        /// <param name="continueFromTaskName">Name of the first task to be run</param>
+        /// <returns>The same <see cref="ExecutionSettings"/> instance so that multiple calls can be chained.</returns>
+        public ExecutionSettings SetContinueFromTask(string continueFromTaskName)
+        {
+            ContinueFromTaskName = continueFromTaskName;
             return this;
         }
     }

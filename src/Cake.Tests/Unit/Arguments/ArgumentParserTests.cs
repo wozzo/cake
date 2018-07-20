@@ -597,6 +597,24 @@ namespace Cake.Tests.Unit.Arguments
                     // Then
                     Assert.Equal(expected, result.Exclusive);
                 }
+
+                [Theory]
+                [InlineData("--continuefrom=task1", "task1")]
+                [InlineData("--ContinueFrom=task2", "task2")]
+                [InlineData("--continuefrom", "")]
+                [InlineData("", null)]
+                public void Can_Set_ContinueFromTaskName(string input, string expected)
+                {
+                    // Given
+                    var fixture = new ArgumentParserFixture();
+                    var parser = new ArgumentParser(fixture.Log, fixture.VerbosityParser);
+
+                    // When
+                    var result = parser.Parse(new[] { "build.cake", input });
+
+                    // Then
+                    Assert.Equal(expected, result.ContinueFromTaskName);
+                }
             }
         }
     }

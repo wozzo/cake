@@ -37,6 +37,11 @@ namespace Cake.Commands
                 _host.Settings.UseExclusiveTarget();
             }
 
+            if (!string.IsNullOrWhiteSpace(options.ContinueFromTaskName))
+            {
+                _host.Settings.SetContinueFromTask(options.ContinueFromTaskName);
+            }
+
             _scriptRunner.Run(_host, options.Script, options.Arguments);
             return true;
         }
